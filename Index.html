@@ -3,8 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forest Background Bio</title>
-<link rel="stylesheet" href="styles.css">
+<title>Biography Page</title>
+<style>
+    body {
+        margin: 0;
+        font-family: "Georgia", serif;
+        color: #e6dccf;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        background: linear-gradient(to bottom, #1e2b20, #2f3e34, #3b562d, #556b2f, #8b6d4d);
+    }
+
+    .container {
+        max-width: 750px;
+        padding: 50px;
+        background: rgba(30, 40, 35, 0.8);
+        border-radius: 22px;
+        box-shadow: 0 25px 70px rgba(0,0,0,0.6);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255,255,255,0.05);
+        position: relative;
+        z-index: 2;
+        overflow: hidden;
+    }
+
+    h1 {
+        margin-top: 0;
+        text-align: center;
+        color: #d6cbb5;
+        letter-spacing: 1px;
+        font-weight: normal;
+    }
+
+    .bio {
+        margin-top: 25px;
+        line-height: 1.8;
+        font-size: 17.085px; /* increased by 0.5% */
+        color: #e6dccf;
+    }
+
+    .divider {
+        height: 1px;
+        margin: 25px 0;
+        background: linear-gradient(to right, transparent, #9caf88, transparent);
+    }
+
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+</style>
 </head>
 <body>
 <canvas id="backgroundCanvas"></canvas>
@@ -12,13 +67,130 @@
     <h1>Charlie Grant</h1>
     <div class="divider"></div>
     <div class="bio">
-        I am Charlie Grant, a 16 year old from Tennessee who thrives at the intersection of technology, creativity, and faith. I spend my days immersed in coding, gaming adventures, and deep study, sharpening my mind and spirit alike.
+        My name is Charlie Grant, and I am a 16-year-old from Tennessee. I am passionate about technology, gaming, and studying, and I have dedicated much of my time to learning and personal growth.
         <br><br>
-        Calm and composed, I naturally bring balance to chaotic spaces, grounding those around me. My passions span programming, gaming, strumming guitar strings, and building intricate LEGO creations, all reflecting my blend of structure and imagination.
+        I enjoy coding and building with LEGO, as well as spending time gaming. These interests allow me to explore both creativity and logic while continuing to grow in skill and discipline. I strive to carry myself with calmness and maturity, often bringing balance to situations that need it.
         <br><br>
-        At my heart, I am devoted to studying God’s word and walking in His will. My dream is to serve as a pastor while using music to connect with and guide others. Though I embrace all things tech, I hope to be remembered most for my spiritual soundness and unwavering faith.
+        My faith is central to who I am. I am especially drawn to Proverbs for its wisdom, and I look up to Paul for his transformation and his dedication to the work of the Lord. I spend time in the mornings in quiet study, as well as learning with friends, seeking to grow not only in knowledge but in understanding.
+        <br><br>
+        My desire is to help others grow in God’s word and to live in alignment with His will. As it is written, “I can do all things through Christ which strengtheneth me.” (Philippians 4:13, KJV). I aim to be reliable, sound in my faith, and grounded in the wisdom of Scripture.
+        <br><br>
+        In the future, I aspire to become a Pastor, serving others faithfully and staying committed to the path God has set before me. I hope to be remembered for my dedication, integrity, and spiritual soundness.
     </div>
 </div>
-<script src="script.js"></script>
+<script>
+const canvas = document.getElementById('backgroundCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+class CodeTrace {
+    constructor(existingTraces) {
+        let overlap;
+        do {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            overlap = existingTraces.some(trace => Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20);
+        } while(overlap);
+
+        this.fullText = this.randomCode();
+        this.text = '';
+        this.charIndex = 0;
+        this.typingSpeed = 0.5;
+        this.deleting = false;
+        this.waitTime = 0;
+        this.waitDuration = 150;
+    }
+
+    randomCode() {
+        const snippets = [
+            'const username = "Charlie";',
+            'let age = 16;',
+            'const location = "Tennessee";',
+            'function studyGodsWord(){}',
+            'let passions = ["coding", "gaming", "guitar"]',
+            'if(balanceNeeded) { calm(); }',
+            'console.log("Tech + Faith")'
+        ];
+        return snippets[Math.floor(Math.random() * snippets.length)];
+    }
+
+    update() {
+        if(!this.deleting){
+            if(this.charIndex < this.fullText.length){
+                if(Math.random() < this.typingSpeed){
+                    this.text += this.fullText[this.charIndex];
+                    this.charIndex++;
+                }
+            } else {
+                this.waitTime++;
+                if(this.waitTime > this.waitDuration){
+                    this.deleting = true;
+                }
+            }
+        } else {
+            if(this.text.length > 0){
+                if(Math.random() < this.typingSpeed){
+                    this.text = this.text.slice(0, -1);
+                }
+            } else {
+                this.reset();
+            }
+        }
+    }
+
+    reset() {
+        this.fullText = this.randomCode();
+        this.charIndex = 0;
+        this.deleting = false;
+        this.text = '';
+        this.waitTime = 0;
+        let overlap;
+        do {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            overlap = codeTraces.some(trace => trace !== this && Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20);
+        } while(overlap);
+    }
+
+    draw(ctx) {
+        ctx.fillStyle = 'rgba(180,255,180,0.8)';
+        ctx.font = '14px monospace';
+        ctx.fillText(this.text, this.x, this.y);
+    }
+}
+
+let codeTraces = [];
+function addCodeTrace() {
+    if(codeTraces.length < 5){
+        codeTraces.push(new CodeTrace(codeTraces));
+    }
+}
+
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#1e2b20');
+    gradient.addColorStop(0.25, '#2f3e34');
+    gradient.addColorStop(0.5, '#3b562d');
+    gradient.addColorStop(0.75, '#556b2f');
+    gradient.addColorStop(1, '#8b6d4d');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    codeTraces.forEach(c => { c.update(); c.draw(ctx); });
+
+    requestAnimationFrame(update);
+}
+
+update();
+setInterval(addCodeTrace, 2000);
+
+window.addEventListener('resize', ()=>{
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
 </body>
 </html>
