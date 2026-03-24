@@ -14,7 +14,12 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background: url('your-background.gif') no-repeat center center / cover;
+        /* GIF background with fallback color */
+        background-color: #2f3e34;
+        background-image: url('./assets/background.gif');
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
     }
 
     .overlay {
