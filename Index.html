@@ -3,91 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cozy GIF Bio</title>
-<style>
-    body {
-        margin: 0;
-        font-family: "Georgia", serif;
-        color: #e6dccf;
-        min-height: 100vh;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        /* GIF background with fallback color */
-        background-color: #2f3e34;
-        background-image: url('./assets/background.gif');
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: cover;
-    }
-
-    .overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(30, 40, 35, 0.7);
-        z-index: 0;
-    }
-
-    .container {
-        max-width: 750px;
-        padding: 50px;
-        background: rgba(30, 40, 35, 0.8);
-        border-radius: 22px;
-        box-shadow: 0 25px 70px rgba(0,0,0,0.6);
-        backdrop-filter: blur(6px);
-        border: 1px solid rgba(255,255,255,0.05);
-        position: relative;
-        z-index: 1;
-        animation: floatContainer 6s ease-in-out infinite alternate;
-    }
-
-    @keyframes floatContainer {
-        0% { transform: translateY(0px); }
-        100% { transform: translateY(-10px); }
-    }
-
-    h1 {
-        margin-top: 0;
-        text-align: center;
-        color: #d6cbb5;
-        letter-spacing: 1px;
-        font-weight: normal;
-        animation: fadeIn 2s ease forwards;
-    }
-
-    .bio {
-        margin-top: 25px;
-        line-height: 1.8;
-        font-size: 17px;
-        color: #e6dccf;
-        animation: fadeIn 3s ease forwards;
-    }
-
-    .accent {
-        color: #9caf88;
-        font-weight: bold;
-    }
-
-    .divider {
-        height: 1px;
-        margin: 25px 0;
-        background: linear-gradient(to right, transparent, #9caf88, transparent);
-    }
-
-    @keyframes fadeIn {
-        0% { opacity: 0; transform: translateY(15px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-</style>
+<title>Forest Background Bio</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<div class="overlay"></div>
-
+<canvas id="backgroundCanvas"></canvas>
 <div class="container">
     <h1>Charlie Grant</h1>
     <div class="divider"></div>
@@ -99,6 +19,6 @@
         At my heart, I am devoted to studying God’s word and walking in His will. My dream is to serve as a pastor while using music to connect with and guide others. Though I embrace all things tech, I hope to be remembered most for my spiritual soundness and unwavering faith.
     </div>
 </div>
-
+<script src="script.js"></script>
 </body>
 </html>
