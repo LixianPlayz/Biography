@@ -12,22 +12,23 @@
         min-height: 100vh;
         display: flex;
         justify-content: center;
-        align-items: center;
-        overflow: hidden;
+        align-items: flex-start;
+        overflow-x: hidden;
         background: linear-gradient(to bottom, #1e2b20, #2f3e34, #3b562d, #556b2f, #8b6d4d);
     }
 
     .container {
         max-width: 750px;
-        padding: 50px;
-        background: rgba(30, 40, 35, 0.8);
+        width: 90%;
+        margin: 40px auto;
+        padding: 40px;
+        background: rgba(30, 40, 35, 0.85);
         border-radius: 22px;
         box-shadow: 0 25px 70px rgba(0,0,0,0.6);
         backdrop-filter: blur(6px);
         border: 1px solid rgba(255,255,255,0.05);
         position: relative;
         z-index: 2;
-        overflow: hidden;
     }
 
     h1 {
@@ -41,7 +42,7 @@
     .bio {
         margin-top: 25px;
         line-height: 1.8;
-        font-size: 17.085px; /* increased by 0.5% */
+        font-size: 17.085px;
         color: #e6dccf;
     }
 
@@ -52,12 +53,25 @@
     }
 
     canvas {
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         z-index: 1;
+        pointer-events: none;
+    }
+
+    /* mobile tweaks */
+    @media (max-width: 600px) {
+        .container {
+            padding: 25px;
+            margin: 20px auto;
+        }
+
+        .bio {
+            font-size: 16px;
+        }
     }
 </style>
 </head>
@@ -90,14 +104,13 @@ class CodeTrace {
         let overlap;
         do {
             this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
+            this.y = Math.random() * canvas.height + window.scrollY;
 
-            // avoid spawning behind the bio container
             const insideBox = (
                 this.x > container.left &&
                 this.x < container.right &&
-                this.y > container.top &&
-                this.y < container.bottom
+                this.y > container.top + window.scrollY &&
+                this.y < container.bottom + window.scrollY
             );
 
             overlap = existingTraces.some(trace => Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20) || insideBox;
@@ -159,13 +172,13 @@ class CodeTrace {
         let overlap;
         do {
             this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
+            this.y = Math.random() * canvas.height + window.scrollY;
 
             const insideBox = (
                 this.x > container.left &&
                 this.x < container.right &&
-                this.y > container.top &&
-                this.y < container.bottom
+                this.y > container.top + window.scrollY &&
+                this.y < container.bottom + window.scrollY
             );
 
             overlap = codeTraces.some(trace => trace !== this && Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20) || insideBox;
@@ -179,9 +192,9 @@ class CodeTrace {
     }
 
     draw(ctx) {
-        ctx.fillStyle = 'rgba(180,255,180,0.8)';
+        ctx.fillStyle = 'rgba(180,255,180,0.7)';
         ctx.font = '14px monospace';
-        ctx.fillText(this.text, this.x, this.y);
+        ctx.fillText(this.text, this.x, this.y - window.scrollY);
     }
 }
 
