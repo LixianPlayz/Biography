@@ -67,7 +67,7 @@
     <h1>Charlie Grant</h1>
     <div class="divider"></div>
     <div class="bio">
-        My name is Charlie Grant, and I am a 16-year-old from Tennessee. I am passionate about technology, gaming, and studying, and I have dedicated much of my time to learning and personal growth.
+        My name is Charlie Grant, and I am a 16-year-old from Tennessee. I am passionate about technology, gaming, and studying, and I dedicate much of my time to learning and personal growth.
         <br><br>
         I enjoy coding and building with LEGO, as well as spending time gaming. These interests allow me to explore both creativity and logic while continuing to grow in skill and discipline. I strive to carry myself with calmness and maturity, often bringing balance to situations that need it.
         <br><br>
@@ -86,11 +86,21 @@ canvas.height = window.innerHeight;
 
 class CodeTrace {
     constructor(existingTraces) {
+        const container = document.querySelector('.container').getBoundingClientRect();
         let overlap;
         do {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            overlap = existingTraces.some(trace => Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20);
+
+            // avoid spawning behind the bio container
+            const insideBox = (
+                this.x > container.left &&
+                this.x < container.right &&
+                this.y > container.top &&
+                this.y < container.bottom
+            );
+
+            overlap = existingTraces.some(trace => Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20) || insideBox;
         } while(overlap);
 
         this.fullText = this.randomCode();
@@ -108,9 +118,14 @@ class CodeTrace {
             'let age = 16;',
             'const location = "Tennessee";',
             'function studyGodsWord(){}',
-            'let passions = ["coding", "gaming", "guitar"]',
-            'if(balanceNeeded) { calm(); }',
-            'console.log("Tech + Faith")'
+            'let passions = ["coding", "gaming", "building"]',
+            'if(balanceNeeded) { stayCalm(); }',
+            'console.log("Tech + Faith")',
+            'const favoriteBook = "Proverbs";',
+            'let roleModel = "Paul";',
+            'function helpOthersGrow(){}',
+            'const verse = "Philippians 4:13";',
+            'while(life) { followGod(); }'
         ];
         return snippets[Math.floor(Math.random() * snippets.length)];
     }
@@ -140,17 +155,27 @@ class CodeTrace {
     }
 
     reset() {
+        const container = document.querySelector('.container').getBoundingClientRect();
+        let overlap;
+        do {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+
+            const insideBox = (
+                this.x > container.left &&
+                this.x < container.right &&
+                this.y > container.top &&
+                this.y < container.bottom
+            );
+
+            overlap = codeTraces.some(trace => trace !== this && Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20) || insideBox;
+        } while(overlap);
+
         this.fullText = this.randomCode();
         this.charIndex = 0;
         this.deleting = false;
         this.text = '';
         this.waitTime = 0;
-        let overlap;
-        do {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            overlap = codeTraces.some(trace => trace !== this && Math.abs(trace.x - this.x) < 150 && Math.abs(trace.y - this.y) < 20);
-        } while(overlap);
     }
 
     draw(ctx) {
