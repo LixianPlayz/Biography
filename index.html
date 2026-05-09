@@ -20,28 +20,64 @@
 
     <section id="home" class="screen active">
       <h1>Pastel <span>Math Lab</span></h1>
-      <p>A dark themed math playground with multiple cool tools.</p>
+      <p class="intro">A dark themed math playground with interactive tools, pastel colors, and simple instructions.</p>
 
       <div class="cards">
-        <div onclick="showPage('sorting')" class="card">Sorting Visualizer</div>
-        <div onclick="showPage('graphing')" class="card">Function Grapher</div>
-        <div onclick="showPage('geometry')" class="card">Geometry Calculator</div>
-        <div onclick="showPage('probability')" class="card">Probability Simulator</div>
-        <div onclick="showPage('patterns')" class="card">Pattern Generator</div>
+        <div onclick="showPage('sorting')" class="card">
+          <h3>Sorting Visualizer</h3>
+          <p>Drag bars around, choose an algorithm, change speed, and watch it sort.</p>
+        </div>
+
+        <div onclick="showPage('graphing')" class="card">
+          <h3>Function Grapher</h3>
+          <p>Graph linear, quadratic, sine, cosine, absolute value, and exponential functions.</p>
+        </div>
+
+        <div onclick="showPage('geometry')" class="card">
+          <h3>Geometry Calculator</h3>
+          <p>Calculate area, perimeter, circumference, and volume for different shapes.</p>
+        </div>
+
+        <div onclick="showPage('probability')" class="card">
+          <h3>Probability Simulator</h3>
+          <p>Run coin, dice, and spinner simulations with custom trial counts.</p>
+        </div>
+
+        <div onclick="showPage('patterns')" class="card">
+          <h3>Pattern Generator</h3>
+          <p>Create arithmetic, geometric, Fibonacci, square, cube, and random sequences.</p>
+        </div>
       </div>
     </section>
 
     <section id="sorting" class="screen">
       <h1>Sorting <span>Visualizer</span></h1>
+      <p class="instructions">
+        Drag the bars into any order. Pick a sorting method, choose how many bars you want, adjust the speed,
+        then press Sort. Taller bars represent larger numbers.
+      </p>
 
       <div class="controls">
         <select id="sortType">
           <option value="bubble">Bubble Sort</option>
           <option value="selection">Selection Sort</option>
           <option value="insertion">Insertion Sort</option>
+          <option value="quick">Quick Sort</option>
         </select>
+
+        <label>Bars: <span id="barCountLabel">18</span></label>
+        <input id="barCount" type="range" min="8" max="32" value="18" oninput="changeBarCount()" />
+
+        <label>Speed: <span id="sortSpeedLabel">Medium</span></label>
+        <input id="sortSpeed" type="range" min="1" max="5" value="3" oninput="changeSortSpeed()" />
+
         <button onclick="shuffleBars()">Shuffle</button>
         <button onclick="startSort()">Sort</button>
+      </div>
+
+      <div class="stats">
+        <div>Comparisons: <strong id="comparisons">0</strong></div>
+        <div>Swaps: <strong id="swaps">0</strong></div>
       </div>
 
       <div id="bars" class="bars"></div>
@@ -49,18 +85,37 @@
 
     <section id="graphing" class="screen">
       <h1>Function <span>Grapher</span></h1>
+      <p class="instructions">
+        Choose a function type. Change A, B, C, zoom, and graph color.
+        The graph updates automatically. A, B, and C mean different things depending on the function.
+      </p>
+
+      <div class="formula-box" id="formulaBox">Formula appears here.</div>
 
       <div class="controls">
         <select id="graphType" onchange="drawGraph()">
-          <option value="linear">Linear</option>
-          <option value="quadratic">Quadratic</option>
-          <option value="sine">Sine</option>
-          <option value="absolute">Absolute Value</option>
+          <option value="linear">Linear: y = ax + b</option>
+          <option value="quadratic">Quadratic: y = ax² + bx + c</option>
+          <option value="sine">Sine: y = a sin(bx) + c</option>
+          <option value="cosine">Cosine: y = a cos(bx) + c</option>
+          <option value="absolute">Absolute: y = a|x - b| + c</option>
+          <option value="exponential">Exponential: y = a × bˣ + c</option>
         </select>
 
-        <input id="a" type="number" value="1" step="0.1" oninput="drawGraph()" />
-        <input id="b" type="number" value="0" step="0.1" oninput="drawGraph()" />
-        <input id="c" type="number" value="0" step="0.1" oninput="drawGraph()" />
+        <input id="a" type="number" value="1" step="0.1" oninput="drawGraph()" placeholder="A" />
+        <input id="b" type="number" value="1" step="0.1" oninput="drawGraph()" placeholder="B" />
+        <input id="c" type="number" value="0" step="0.1" oninput="drawGraph()" placeholder="C" />
+
+        <label>Zoom: <span id="zoomLabel">40</span></label>
+        <input id="zoom" type="range" min="15" max="80" value="40" oninput="drawGraph()" />
+
+        <select id="graphColor" onchange="drawGraph()">
+          <option value="#b8adff">Purple</option>
+          <option value="#97f2df">Mint</option>
+          <option value="#ffd6a5">Peach</option>
+          <option value="#ffadad">Pink</option>
+          <option value="#9bf6ff">Blue</option>
+        </select>
       </div>
 
       <canvas id="graphCanvas" width="900" height="500"></canvas>
@@ -68,16 +123,25 @@
 
     <section id="geometry" class="screen">
       <h1>Geometry <span>Calculator</span></h1>
+      <p class="instructions">
+        Pick a shape, enter the needed measurements, then press Calculate.
+        The labels below explain what each input means for the selected shape.
+      </p>
+
+      <div class="formula-box" id="geometryHelp">Choose a shape to see instructions.</div>
 
       <div class="controls">
-        <select id="shape">
+        <select id="shape" onchange="updateGeometryHelp()">
           <option value="circle">Circle</option>
           <option value="rectangle">Rectangle</option>
           <option value="triangle">Triangle</option>
+          <option value="cube">Cube</option>
+          <option value="sphere">Sphere</option>
+          <option value="cylinder">Cylinder</option>
         </select>
 
-        <input id="num1" type="number" placeholder="Radius / Width / Base" />
-        <input id="num2" type="number" placeholder="Height" />
+        <input id="num1" type="number" placeholder="Value 1" />
+        <input id="num2" type="number" placeholder="Value 2" />
         <button onclick="calculateGeometry()">Calculate</button>
       </div>
 
@@ -86,14 +150,23 @@
 
     <section id="probability" class="screen">
       <h1>Probability <span>Simulator</span></h1>
+      <p class="instructions">
+        Choose a simulation, set how many trials to run, then press Run.
+        Higher trials give results closer to the expected probability.
+      </p>
+
+      <div class="formula-box" id="probabilityHelp">
+        Coin flip expects about 50 percent heads and 50 percent tails.
+      </div>
 
       <div class="controls">
-        <select id="simType">
+        <select id="simType" onchange="updateProbabilityHelp()">
           <option value="coin">Coin Flip</option>
           <option value="dice">Dice Roll</option>
+          <option value="spinner">Color Spinner</option>
         </select>
 
-        <input id="trials" type="number" value="100" />
+        <input id="trials" type="number" value="100" min="1" max="100000" />
         <button onclick="runSimulation()">Run</button>
       </div>
 
@@ -102,19 +175,28 @@
 
     <section id="patterns" class="screen">
       <h1>Pattern <span>Generator</span></h1>
+      <p class="instructions">
+        Choose a pattern type, customize the start number, step or multiplier, and amount of terms.
+        Then press Generate.
+      </p>
+
+      <div class="formula-box" id="patternHelp">
+        Arithmetic means you add the same number each time.
+      </div>
 
       <div class="controls">
-        <select id="patternType">
+        <select id="patternType" onchange="updatePatternHelp()">
           <option value="arithmetic">Arithmetic</option>
           <option value="geometric">Geometric</option>
           <option value="fibonacci">Fibonacci</option>
           <option value="squares">Squares</option>
           <option value="cubes">Cubes</option>
+          <option value="random">Random</option>
         </select>
 
         <input id="startNum" type="number" value="1" />
         <input id="stepNum" type="number" value="2" />
-        <input id="amountNum" type="number" value="10" />
+        <input id="amountNum" type="number" value="10" min="1" max="100" />
         <button onclick="generatePattern()">Generate</button>
       </div>
 
