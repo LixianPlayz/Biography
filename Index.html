@@ -3,557 +3,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pastel Sorting Visualizer</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(130, 96, 255, 0.22), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(90, 220, 210, 0.16), transparent 36%),
-        linear-gradient(135deg, #050608 0%, #090b10 52%, #050506 100%);
-      color: #f5f7fb;
-      overflow-x: hidden;
-    }
-
-    .page {
-      width: min(1180px, 94vw);
-      margin: 0 auto;
-      padding: 34px 0 44px;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      gap: 24px;
-      align-items: flex-end;
-      margin-bottom: 26px;
-    }
-
-    .title-block h1 {
-      font-size: clamp(2.1rem, 5vw, 4.6rem);
-      line-height: 0.95;
-      letter-spacing: -0.08em;
-      max-width: 760px;
-    }
-
-    .title-block span {
-      color: #b6a7ff;
-      text-shadow: 0 0 24px rgba(182, 167, 255, 0.35);
-    }
-
-    .title-block p {
-      margin-top: 14px;
-      max-width: 650px;
-      color: #b8bdcc;
-      font-size: 1rem;
-      line-height: 1.6;
-    }
-
-    .pill {
-      padding: 12px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.055);
-      color: #dce2f3;
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
-      white-space: nowrap;
-      backdrop-filter: blur(16px);
-    }
-
-    .panel {
-      border: 1px solid rgba(255, 255, 255, 0.11);
-      background: rgba(11, 13, 20, 0.78);
-      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
-      border-radius: 28px;
-      overflow: hidden;
-      backdrop-filter: blur(22px);
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr 1fr auto auto;
-      gap: 12px;
-      padding: 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
-    }
-
-    label {
-      display: grid;
-      gap: 8px;
-      color: #9ca5bb;
-      font-size: 0.8rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    select,
-    input[type="range"],
-    button {
-      width: 100%;
-    }
-
-    select {
-      appearance: none;
-      border: 1px solid rgba(255, 255, 255, 0.13);
-      background: #111520;
-      color: #f3f6ff;
-      border-radius: 15px;
-      padding: 12px 14px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    input[type="range"] {
-      accent-color: #b6a7ff;
-      cursor: pointer;
-    }
-
-    button {
-      border: 0;
-      border-radius: 16px;
-      padding: 13px 18px;
-      color: #061016;
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
-      white-space: nowrap;
-    }
-
-    button:hover { transform: translateY(-2px); filter: brightness(1.06); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-    .sort-btn {
-      background: linear-gradient(135deg, #b6a7ff, #97f2df);
-      box-shadow: 0 12px 32px rgba(151, 242, 223, 0.16);
-    }
-
-    .shuffle-btn {
-      background: linear-gradient(135deg, #ffd6a5, #ffadad);
-      box-shadow: 0 12px 32px rgba(255, 173, 173, 0.12);
-    }
-
-    .stage-wrap {
-      padding: 22px;
-    }
-
-    .stage {
-      position: relative;
-      height: 510px;
-      border-radius: 24px;
-      background:
-        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-        rgba(3, 4, 7, 0.9);
-      background-size: 36px 36px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 10px;
-      padding: 24px 24px 34px;
-      overflow: hidden;
-    }
-
-    .stage::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.09), transparent 42%);
-      pointer-events: none;
-    }
-
-    .bar {
-      position: relative;
-      width: 42px;
-      min-width: 22px;
-      border-radius: 14px 14px 8px 8px;
-      cursor: grab;
-      user-select: none;
-      transition: height 0.28s ease, transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding-bottom: 10px;
-      font-size: 0.76rem;
-      font-weight: 900;
-      color: rgba(5, 6, 8, 0.72);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 20px 44px rgba(0,0,0,0.25);
-      z-index: 1;
-    }
-
-    .bar:active { cursor: grabbing; }
-    .bar.dragging { opacity: 0.55; transform: scale(1.04) translateY(-10px); }
-    .bar.compare { filter: brightness(1.18); transform: translateY(-14px); box-shadow: 0 0 30px rgba(255,255,255,0.2); }
-    .bar.swap { transform: translateY(-24px) rotate(2deg); }
-    .bar.sorted { filter: saturate(1.35) brightness(1.12); box-shadow: 0 0 28px rgba(151,242,223,0.18); }
-
-    .info {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      padding: 0 22px 22px;
-    }
-
-    .stat {
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      background: rgba(255, 255, 255, 0.045);
-      border-radius: 18px;
-      padding: 16px;
-    }
-
-    .stat small {
-      color: #969fb4;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 0.72rem;
-    }
-
-    .stat strong {
-      display: block;
-      margin-top: 6px;
-      font-size: 1.4rem;
-    }
-
-    .note {
-      margin-top: 18px;
-      color: #9099ae;
-      font-size: 0.92rem;
-      text-align: center;
-    }
-
-    @media (max-width: 860px) {
-      header { display: grid; }
-      .toolbar { grid-template-columns: 1fr 1fr; }
-      .sort-btn, .shuffle-btn { grid-column: span 1; }
-      .stage { gap: 6px; height: 430px; padding-inline: 12px; }
-      .bar { width: 30px; border-radius: 10px 10px 6px 6px; font-size: 0.66rem; }
-      .info { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 540px) {
-      .toolbar { grid-template-columns: 1fr; }
-      .stage { gap: 4px; }
-      .bar { width: 20px; font-size: 0; }
-    }
-  </style>
+  <title>Pastel Math Lab</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="page">
-    <header>
-      <div class="title-block">
-        <h1>Pastel <span>Sort Lab</span></h1>
-        <p>Drag the tall rectangles into any order, then watch the algorithm clean them up with animated comparisons, swaps, and soft pastel colors.</p>
-      </div>
-      <div class="pill">Drag bars • Pick method • Sort</div>
-    </header>
+    <nav class="nav">
+      <h2>Pastel <span>Math Lab</span></h2>
+      <button onclick="showPage('home')">Home</button>
+      <button onclick="showPage('sorting')">Sorting</button>
+      <button onclick="showPage('graphing')">Graphing</button>
+      <button onclick="showPage('geometry')">Geometry</button>
+      <button onclick="showPage('probability')">Probability</button>
+      <button onclick="showPage('patterns')">Patterns</button>
+    </nav>
 
-    <section class="panel">
-      <div class="toolbar">
-        <label>
-          Sorting Method
-          <select id="algorithm">
-            <option value="bubble">Bubble Sort</option>
-            <option value="selection">Selection Sort</option>
-            <option value="insertion">Insertion Sort</option>
-            <option value="quick">Quick Sort</option>
-          </select>
-        </label>
+    <section id="home" class="screen active">
+      <h1>Pastel <span>Math Lab</span></h1>
+      <p>A dark themed math playground with multiple cool tools.</p>
 
-        <label>
-          Bar Count: <span id="countLabel">16</span>
-          <input id="count" type="range" min="8" max="28" value="16" />
-        </label>
-
-        <label>
-          Speed: <span id="speedLabel">Medium</span>
-          <input id="speed" type="range" min="1" max="5" value="3" />
-        </label>
-
-        <button class="sort-btn" id="sortBtn">Sort Bars</button>
-        <button class="shuffle-btn" id="shuffleBtn">Shuffle</button>
-      </div>
-
-      <div class="stage-wrap">
-        <div class="stage" id="stage" aria-label="Sorting visualizer bars"></div>
-      </div>
-
-      <div class="info">
-        <div class="stat">
-          <small>Comparisons</small>
-          <strong id="comparisons">0</strong>
-        </div>
-        <div class="stat">
-          <small>Swaps / Moves</small>
-          <strong id="swaps">0</strong>
-        </div>
-        <div class="stat">
-          <small>Status</small>
-          <strong id="status">Ready</strong>
-        </div>
+      <div class="cards">
+        <div onclick="showPage('sorting')" class="card">Sorting Visualizer</div>
+        <div onclick="showPage('graphing')" class="card">Function Grapher</div>
+        <div onclick="showPage('geometry')" class="card">Geometry Calculator</div>
+        <div onclick="showPage('probability')" class="card">Probability Simulator</div>
+        <div onclick="showPage('patterns')" class="card">Pattern Generator</div>
       </div>
     </section>
 
-    <p class="note">Tip: drag a bar left or right to reorder it before sorting.</p>
+    <section id="sorting" class="screen">
+      <h1>Sorting <span>Visualizer</span></h1>
+
+      <div class="controls">
+        <select id="sortType">
+          <option value="bubble">Bubble Sort</option>
+          <option value="selection">Selection Sort</option>
+          <option value="insertion">Insertion Sort</option>
+        </select>
+        <button onclick="shuffleBars()">Shuffle</button>
+        <button onclick="startSort()">Sort</button>
+      </div>
+
+      <div id="bars" class="bars"></div>
+    </section>
+
+    <section id="graphing" class="screen">
+      <h1>Function <span>Grapher</span></h1>
+
+      <div class="controls">
+        <select id="graphType" onchange="drawGraph()">
+          <option value="linear">Linear</option>
+          <option value="quadratic">Quadratic</option>
+          <option value="sine">Sine</option>
+          <option value="absolute">Absolute Value</option>
+        </select>
+
+        <input id="a" type="number" value="1" step="0.1" oninput="drawGraph()" />
+        <input id="b" type="number" value="0" step="0.1" oninput="drawGraph()" />
+        <input id="c" type="number" value="0" step="0.1" oninput="drawGraph()" />
+      </div>
+
+      <canvas id="graphCanvas" width="900" height="500"></canvas>
+    </section>
+
+    <section id="geometry" class="screen">
+      <h1>Geometry <span>Calculator</span></h1>
+
+      <div class="controls">
+        <select id="shape">
+          <option value="circle">Circle</option>
+          <option value="rectangle">Rectangle</option>
+          <option value="triangle">Triangle</option>
+        </select>
+
+        <input id="num1" type="number" placeholder="Radius / Width / Base" />
+        <input id="num2" type="number" placeholder="Height" />
+        <button onclick="calculateGeometry()">Calculate</button>
+      </div>
+
+      <div id="geometryOutput" class="output"></div>
+    </section>
+
+    <section id="probability" class="screen">
+      <h1>Probability <span>Simulator</span></h1>
+
+      <div class="controls">
+        <select id="simType">
+          <option value="coin">Coin Flip</option>
+          <option value="dice">Dice Roll</option>
+        </select>
+
+        <input id="trials" type="number" value="100" />
+        <button onclick="runSimulation()">Run</button>
+      </div>
+
+      <div id="probabilityOutput" class="output"></div>
+    </section>
+
+    <section id="patterns" class="screen">
+      <h1>Pattern <span>Generator</span></h1>
+
+      <div class="controls">
+        <select id="patternType">
+          <option value="arithmetic">Arithmetic</option>
+          <option value="geometric">Geometric</option>
+          <option value="fibonacci">Fibonacci</option>
+          <option value="squares">Squares</option>
+          <option value="cubes">Cubes</option>
+        </select>
+
+        <input id="startNum" type="number" value="1" />
+        <input id="stepNum" type="number" value="2" />
+        <input id="amountNum" type="number" value="10" />
+        <button onclick="generatePattern()">Generate</button>
+      </div>
+
+      <div id="patternOutput" class="output"></div>
+    </section>
   </main>
 
-  <script>
-    const stage = document.getElementById("stage");
-    const algorithm = document.getElementById("algorithm");
-    const countInput = document.getElementById("count");
-    const speedInput = document.getElementById("speed");
-    const countLabel = document.getElementById("countLabel");
-    const speedLabel = document.getElementById("speedLabel");
-    const sortBtn = document.getElementById("sortBtn");
-    const shuffleBtn = document.getElementById("shuffleBtn");
-    const comparisonsEl = document.getElementById("comparisons");
-    const swapsEl = document.getElementById("swaps");
-    const statusEl = document.getElementById("status");
-
-    const colors = [
-      "#b8c0ff", "#caffbf", "#ffd6a5", "#ffadad", "#a0c4ff", "#fdffb6",
-      "#ffc6ff", "#9bf6ff", "#d0f4de", "#f1c0e8", "#cfbaf0", "#b9fbc0"
-    ];
-
-    let values = [];
-    let comparisons = 0;
-    let swaps = 0;
-    let sorting = false;
-    let draggedIndex = null;
-
-    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-    function delay() {
-      const speed = Number(speedInput.value);
-      return [420, 300, 190, 105, 45][speed - 1];
-    }
-
-    function updateSpeedLabel() {
-      speedLabel.textContent = ["Very Slow", "Slow", "Medium", "Fast", "Insane"][Number(speedInput.value) - 1];
-    }
-
-    function resetStats() {
-      comparisons = 0;
-      swaps = 0;
-      comparisonsEl.textContent = "0";
-      swapsEl.textContent = "0";
-      statusEl.textContent = "Ready";
-    }
-
-    function generateValues() {
-      const count = Number(countInput.value);
-      countLabel.textContent = count;
-      const min = 55;
-      const max = 430;
-      values = Array.from({ length: count }, (_, i) => {
-        const step = (max - min) / Math.max(1, count - 1);
-        return Math.round(min + step * i);
-      });
-      shuffleArray(values);
-      resetStats();
-      renderBars();
-    }
-
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-    }
-
-    function renderBars(active = {}, sortedUntil = -1) {
-      stage.innerHTML = "";
-      values.forEach((value, index) => {
-        const bar = document.createElement("div");
-        bar.className = "bar";
-        bar.draggable = !sorting;
-        bar.style.height = `${value}px`;
-        bar.style.background = `linear-gradient(180deg, ${colors[index % colors.length]}, ${shade(colors[index % colors.length], -12)})`;
-        bar.textContent = Math.round(value / 10);
-        bar.dataset.index = index;
-
-        if (active.compare?.includes(index)) bar.classList.add("compare");
-        if (active.swap?.includes(index)) bar.classList.add("swap");
-        if (sortedUntil !== -1 && index >= sortedUntil) bar.classList.add("sorted");
-
-        bar.addEventListener("dragstart", handleDragStart);
-        bar.addEventListener("dragover", handleDragOver);
-        bar.addEventListener("drop", handleDrop);
-        bar.addEventListener("dragend", handleDragEnd);
-
-        stage.appendChild(bar);
-      });
-    }
-
-    function shade(hex, percent) {
-      const num = parseInt(hex.replace("#", ""), 16);
-      const amt = Math.round(2.55 * percent);
-      const r = Math.max(0, Math.min(255, (num >> 16) + amt));
-      const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00ff) + amt));
-      const b = Math.max(0, Math.min(255, (num & 0x0000ff) + amt));
-      return `#${(0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1)}`;
-    }
-
-    function handleDragStart(e) {
-      if (sorting) return;
-      draggedIndex = Number(e.target.dataset.index);
-      e.target.classList.add("dragging");
-    }
-
-    function handleDragOver(e) {
-      if (!sorting) e.preventDefault();
-    }
-
-    function handleDrop(e) {
-      e.preventDefault();
-      if (sorting || draggedIndex === null) return;
-      const targetIndex = Number(e.target.dataset.index);
-      if (Number.isNaN(targetIndex) || targetIndex === draggedIndex) return;
-      const [moved] = values.splice(draggedIndex, 1);
-      values.splice(targetIndex, 0, moved);
-      draggedIndex = null;
-      resetStats();
-      renderBars();
-    }
-
-    function handleDragEnd() {
-      draggedIndex = null;
-      document.querySelectorAll(".bar").forEach(bar => bar.classList.remove("dragging"));
-    }
-
-    async function compare(i, j) {
-      comparisons++;
-      comparisonsEl.textContent = comparisons;
-      renderBars({ compare: [i, j] });
-      await sleep(delay());
-      return values[i] > values[j];
-    }
-
-    async function swap(i, j) {
-      swaps++;
-      swapsEl.textContent = swaps;
-      renderBars({ swap: [i, j] });
-      await sleep(delay() * 0.75);
-      [values[i], values[j]] = [values[j], values[i]];
-      renderBars({ swap: [i, j] });
-      await sleep(delay() * 0.75);
-    }
-
-    async function bubbleSort() {
-      for (let end = values.length - 1; end > 0; end--) {
-        for (let i = 0; i < end; i++) {
-          if (await compare(i, i + 1)) await swap(i, i + 1);
-        }
-        renderBars({}, end);
-      }
-    }
-
-    async function selectionSort() {
-      for (let i = 0; i < values.length - 1; i++) {
-        let min = i;
-        for (let j = i + 1; j < values.length; j++) {
-          comparisons++;
-          comparisonsEl.textContent = comparisons;
-          renderBars({ compare: [min, j] });
-          await sleep(delay());
-          if (values[j] < values[min]) min = j;
-        }
-        if (min !== i) await swap(i, min);
-      }
-    }
-
-    async function insertionSort() {
-      for (let i = 1; i < values.length; i++) {
-        let j = i;
-        while (j > 0) {
-          if (await compare(j - 1, j)) {
-            await swap(j - 1, j);
-            j--;
-          } else {
-            break;
-          }
-        }
-      }
-    }
-
-    async function quickSort(left = 0, right = values.length - 1) {
-      if (left >= right) return;
-      const pivotIndex = right;
-      let partitionIndex = left;
-
-      for (let i = left; i < right; i++) {
-        comparisons++;
-        comparisonsEl.textContent = comparisons;
-        renderBars({ compare: [i, pivotIndex] });
-        await sleep(delay());
-        if (values[i] < values[pivotIndex]) {
-          if (i !== partitionIndex) await swap(i, partitionIndex);
-          partitionIndex++;
-        }
-      }
-
-      await swap(partitionIndex, right);
-      await quickSort(left, partitionIndex - 1);
-      await quickSort(partitionIndex + 1, right);
-    }
-
-    async function finishAnimation() {
-      for (let i = 0; i < values.length; i++) {
-        renderBars({ compare: [i] });
-        await sleep(28);
-      }
-      renderBars();
-      document.querySelectorAll(".bar").forEach(bar => bar.classList.add("sorted"));
-    }
-
-    async function startSort() {
-      if (sorting) return;
-      sorting = true;
-      sortBtn.disabled = true;
-      shuffleBtn.disabled = true;
-      countInput.disabled = true;
-      algorithm.disabled = true;
-      statusEl.textContent = "Sorting";
-      comparisons = 0;
-      swaps = 0;
-      comparisonsEl.textContent = "0";
-      swapsEl.textContent = "0";
-
-      const selected = algorithm.value;
-      if (selected === "bubble") await bubbleSort();
-      if (selected === "selection") await selectionSort();
-      if (selected === "insertion") await insertionSort();
-      if (selected === "quick") await quickSort();
-
-      await finishAnimation();
-      statusEl.textContent = "Sorted";
-      sorting = false;
-      sortBtn.disabled = false;
-      shuffleBtn.disabled = false;
-      countInput.disabled = false;
-      algorithm.disabled = false;
-    }
-
-    sortBtn.addEventListener("click", startSort);
-    shuffleBtn.addEventListener("click", () => {
-      if (sorting) return;
-      shuffleArray(values);
-      resetStats();
-      renderBars();
-    });
-
-    countInput.addEventListener("input", generateValues);
-    speedInput.addEventListener("input", updateSpeedLabel);
-
-    updateSpeedLabel();
-    generateValues();
-  </script>
+  <script src="main.js"></script>
 </body>
 </html>
