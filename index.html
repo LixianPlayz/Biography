@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lixians Math Testing</title>
+  <title>Pastel Math Lab</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -13,14 +13,13 @@
       <button onclick="showPage('home')">Home</button>
       <button onclick="showPage('sorting')">Sorting</button>
       <button onclick="showPage('graphing')">Graphing</button>
-      <button onclick="showPage('geometry')">Geometry</button>
       <button onclick="showPage('probability')">Probability</button>
       <button onclick="showPage('patterns')">Patterns</button>
     </nav>
 
     <section id="home" class="screen active">
       <h1>Pastel <span>Math Lab</span></h1>
-      <p class="intro">Do whatever you want here, It's just an experiment. :)</p>
+      <p class="intro">Just a Math Playground with pretty colors. This was a fun project, so do whatever you want in it. :)</p>
 
       <div class="cards">
         <div onclick="showPage('sorting')" class="card">
@@ -31,11 +30,6 @@
         <div onclick="showPage('graphing')" class="card">
           <h3>Function Grapher</h3>
           <p>Graph linear, quadratic, sine, cosine, absolute value, and exponential functions.</p>
-        </div>
-
-        <div onclick="showPage('geometry')" class="card">
-          <h3>Geometry Calculator</h3>
-          <p>Calculate area, perimeter, circumference, surface area, and volume with labeled visuals.</p>
         </div>
 
         <div onclick="showPage('probability')" class="card">
@@ -96,7 +90,7 @@
       <h1>Function <span>Grapher</span></h1>
       <p class="instructions">
         Choose a function type. Change A, B, C, zoom, and graph color.
-        The graph updates automatically. A, B, and C mean different things depending on the function.
+        The graph updates automatically.
       </p>
 
       <div class="formula-box" id="formulaBox">Formula appears here.</div>
@@ -130,40 +124,10 @@
       <canvas id="graphCanvas" width="900" height="500"></canvas>
     </section>
 
-    <section id="geometry" class="screen">
-      <h1>Geometry <span>Calculator</span></h1>
-      <p class="instructions">
-        Pick a shape, enter the measurements, then press Calculate.
-        The visual shows what each measurement means with labeled radius, width, height, base, or side length.
-      </p>
-
-      <div class="formula-box" id="geometryHelp">Choose a shape to see instructions.</div>
-
-      <div class="controls">
-        <select id="shape" onchange="updateGeometryHelp(); drawGeometryVisual();">
-          <option value="circle">Circle</option>
-          <option value="rectangle">Rectangle</option>
-          <option value="triangle">Triangle</option>
-          <option value="cube">Cube</option>
-          <option value="sphere">Sphere</option>
-          <option value="cylinder">Cylinder</option>
-        </select>
-
-        <input id="num1" type="number" placeholder="Value 1" oninput="drawGeometryVisual()" />
-        <input id="num2" type="number" placeholder="Value 2" oninput="drawGeometryVisual()" />
-        <button onclick="calculateGeometry(); drawGeometryVisual();">Calculate</button>
-      </div>
-
-      <canvas id="geometryCanvas" width="900" height="430"></canvas>
-
-      <div id="geometryOutput" class="output"></div>
-    </section>
-
     <section id="probability" class="screen">
       <h1>Probability <span>Simulator</span></h1>
       <p class="instructions">
         Choose a simulation, set how many trials to run, then press Run.
-        Higher trials give results closer to the expected probability.
       </p>
 
       <div class="formula-box" id="probabilityHelp">
@@ -186,10 +150,6 @@
 
     <section id="patterns" class="screen">
       <h1>Pattern <span>Generator</span></h1>
-      <p class="instructions">
-        Choose a pattern type, customize the start number, step or multiplier, and amount of terms.
-        Then press Generate.
-      </p>
 
       <div class="formula-box" id="patternHelp">
         Arithmetic means you add the same number each time.
