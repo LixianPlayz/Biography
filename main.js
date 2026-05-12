@@ -14,6 +14,7 @@ const pastelColors = [
 let bars = [];
 let comparisons = 0;
 let swaps = 0;
+let isSorting = false;
 
 function showPage(id) {
   document.querySelectorAll(".screen").forEach(page => {
@@ -23,7 +24,12 @@ function showPage(id) {
   document.getElementById(id).classList.add("active");
 
   if (id === "graphing") drawGraph();
-  if (id === "geometry") updateGeometryHelp();
+
+  if (id === "geometry") {
+    updateGeometryHelp();
+    drawGeometryVisual();
+  }
+
   if (id === "probability") updateProbabilityHelp();
   if (id === "patterns") updatePatternHelp();
 }
@@ -32,11 +38,14 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/* Sorting */
-
 function getSortDelay() {
   const speed = Number(document.getElementById("sortSpeed").value);
   return [350, 220, 120, 65, 25][speed - 1];
+}
+
+function setSortAction(text) {
+  const action = document.getElementById("sortAction");
+  if (action) action.textContent = text;
 }
 
 function changeSortSpeed() {
@@ -46,17 +55,23 @@ function changeSortSpeed() {
 }
 
 function changeBarCount() {
+  if (isSorting) return;
+
   document.getElementById("barCountLabel").textContent = document.getElementById("barCount").value;
   makeBars();
 }
 
 function makeBars() {
   const amount = Number(document.getElementById("barCount").value);
+
   bars = Array.from({ length: amount }, () => Math.floor(Math.random() * 360) + 80);
   comparisons = 0;
   swaps = 0;
+
   updateSortStats();
+  setSortAction("Waiting");
   renderBars();
+  renderArrayView();
 }
 
 function updateSortStats() {
@@ -78,9 +93,10 @@ function renderBars(activeA = -1, activeB = -1) {
 
     bar.style.height = height + "px";
     bar.style.background = pastelColors[index % pastelColors.length];
-    bar.draggable = true;
+    bar.draggable = !isSorting;
 
     bar.addEventListener("dragstart", () => {
+      if (isSorting) return;
       bar.dataset.dragging = "true";
     });
 
@@ -89,10 +105,12 @@ function renderBars(activeA = -1, activeB = -1) {
     });
 
     bar.addEventListener("dragover", event => {
-      event.preventDefault();
+      if (!isSorting) event.preventDefault();
     });
 
     bar.addEventListener("drop", () => {
+      if (isSorting) return;
+
       const dragged = [...holder.children].find(child => child.dataset.dragging === "true");
       const from = [...holder.children].indexOf(dragged);
       const to = [...holder.children].indexOf(bar);
@@ -102,23 +120,57 @@ function renderBars(activeA = -1, activeB = -1) {
       const moved = bars.splice(from, 1)[0];
       bars.splice(to, 0, moved);
 
+      setSortAction(`Moved index ${from} to index ${to}`);
       renderBars();
+      renderArrayView();
     });
 
     holder.appendChild(bar);
   });
 }
 
+function renderArrayView(activeA = -1, activeB = -1, mode = "compare") {
+  const arrayView = document.getElementById("arrayView");
+  if (!arrayView) return;
+
+  arrayView.innerHTML = "";
+
+  bars.forEach((height, index) => {
+    const cell = document.createElement("div");
+    cell.className = "array-cell";
+
+    if (index === activeA || index === activeB) {
+      cell.classList.add(mode);
+    }
+
+    cell.innerHTML = `<small>[${index}]</small>${height}`;
+    arrayView.appendChild(cell);
+  });
+}
+
 function shuffleBars() {
+  if (isSorting) return;
   makeBars();
 }
 
+function lockSortingControls(locked) {
+  isSorting = locked;
+
+  document.getElementById("sortType").disabled = locked;
+  document.getElementById("barCount").disabled = locked;
+  document.getElementById("sortSpeed").disabled = locked;
+}
+
 async function startSort() {
+  if (isSorting) return;
+
   const type = document.getElementById("sortType").value;
 
   comparisons = 0;
   swaps = 0;
   updateSortStats();
+  lockSortingControls(true);
+  setSortAction("Starting sort");
 
   if (type === "bubble") await bubbleSort();
   if (type === "selection") await selectionSort();
@@ -126,20 +178,42 @@ async function startSort() {
   if (type === "quick") await quickSort(0, bars.length - 1);
 
   renderBars();
+  renderArrayView();
+  setSortAction("Sorted");
+  lockSortingControls(false);
+}
+
+async function highlightCompare(i, j, message) {
+  comparisons++;
+  updateSortStats();
+  setSortAction(message || `Comparing index ${i} and index ${j}`);
+  renderBars(i, j);
+  renderArrayView(i, j, "compare");
+  await sleep(getSortDelay());
+}
+
+async function doSwap(i, j, message) {
+  swaps++;
+  updateSortStats();
+  setSortAction(message || `Swapping index ${i} and index ${j}`);
+  renderBars(i, j);
+  renderArrayView(i, j, "swap");
+  await sleep(getSortDelay() * 0.8);
+
+  [bars[i], bars[j]] = [bars[j], bars[i]];
+
+  renderBars(i, j);
+  renderArrayView(i, j, "swap");
+  await sleep(getSortDelay() * 0.8);
 }
 
 async function bubbleSort() {
   for (let i = 0; i < bars.length; i++) {
     for (let j = 0; j < bars.length - i - 1; j++) {
-      comparisons++;
-      updateSortStats();
-      renderBars(j, j + 1);
-      await sleep(getSortDelay());
+      await highlightCompare(j, j + 1, `Bubble Sort: checking if array[${j}] > array[${j + 1}]`);
 
       if (bars[j] > bars[j + 1]) {
-        swaps++;
-        [bars[j], bars[j + 1]] = [bars[j + 1], bars[j]];
-        updateSortStats();
+        await doSwap(j, j + 1, `Bubble Sort: swapped array[${j}] and array[${j + 1}]`);
       }
     }
   }
@@ -148,20 +222,22 @@ async function bubbleSort() {
 async function selectionSort() {
   for (let i = 0; i < bars.length; i++) {
     let min = i;
+    setSortAction(`Selection Sort: assuming index ${i} is the smallest`);
 
     for (let j = i + 1; j < bars.length; j++) {
-      comparisons++;
-      updateSortStats();
-      renderBars(min, j);
-      await sleep(getSortDelay());
+      await highlightCompare(min, j, `Selection Sort: comparing current smallest index ${min} with index ${j}`);
 
-      if (bars[j] < bars[min]) min = j;
+      if (bars[j] < bars[min]) {
+        min = j;
+        setSortAction(`Selection Sort: new smallest value found at index ${min}`);
+        renderBars(min, -1);
+        renderArrayView(min, -1, "compare");
+        await sleep(getSortDelay());
+      }
     }
 
     if (min !== i) {
-      swaps++;
-      [bars[i], bars[min]] = [bars[min], bars[i]];
-      updateSortStats();
+      await doSwap(i, min, `Selection Sort: placing smallest value at index ${i}`);
     }
   }
 }
@@ -169,16 +245,17 @@ async function selectionSort() {
 async function insertionSort() {
   for (let i = 1; i < bars.length; i++) {
     let j = i;
+    setSortAction(`Insertion Sort: inserting value at index ${i}`);
 
-    while (j > 0 && bars[j - 1] > bars[j]) {
-      comparisons++;
-      swaps++;
-      renderBars(j - 1, j);
-      updateSortStats();
-      await sleep(getSortDelay());
+    while (j > 0) {
+      await highlightCompare(j - 1, j, `Insertion Sort: checking array[${j - 1}] and array[${j}]`);
 
-      [bars[j - 1], bars[j]] = [bars[j], bars[j - 1]];
-      j--;
+      if (bars[j - 1] > bars[j]) {
+        await doSwap(j - 1, j, `Insertion Sort: moving smaller value left`);
+        j--;
+      } else {
+        break;
+      }
     }
   }
 }
@@ -189,29 +266,25 @@ async function quickSort(left, right) {
   const pivot = bars[right];
   let i = left;
 
+  setSortAction(`Quick Sort: pivot is array[${right}] = ${pivot}`);
+  renderBars(right, -1);
+  renderArrayView(right, -1, "compare");
+  await sleep(getSortDelay());
+
   for (let j = left; j < right; j++) {
-    comparisons++;
-    renderBars(j, right);
-    updateSortStats();
-    await sleep(getSortDelay());
+    await highlightCompare(j, right, `Quick Sort: checking if array[${j}] < pivot array[${right}]`);
 
     if (bars[j] < pivot) {
-      swaps++;
-      [bars[i], bars[j]] = [bars[j], bars[i]];
+      await doSwap(i, j, `Quick Sort: moved smaller value toward the left partition`);
       i++;
-      updateSortStats();
     }
   }
 
-  swaps++;
-  [bars[i], bars[right]] = [bars[right], bars[i]];
-  updateSortStats();
+  await doSwap(i, right, `Quick Sort: moved pivot into its final position`);
 
   await quickSort(left, i - 1);
   await quickSort(i + 1, right);
 }
-
-/* Graphing */
 
 function drawGraph() {
   const canvas = document.getElementById("graphCanvas");
@@ -276,18 +349,16 @@ function drawGraph() {
   ctx.stroke();
 }
 
-/* Geometry */
-
 function updateGeometryHelp() {
   const shape = document.getElementById("shape").value;
   const help = document.getElementById("geometryHelp");
 
   const text = {
-    circle: "Circle: put the radius in Value 1. Value 2 is not used.",
+    circle: "Circle: put radius in Value 1. The visual shows the radius from the center to the edge.",
     rectangle: "Rectangle: put width in Value 1 and height in Value 2.",
     triangle: "Triangle: put base in Value 1 and height in Value 2.",
-    cube: "Cube: put side length in Value 1. Value 2 is not used.",
-    sphere: "Sphere: put radius in Value 1. Value 2 is not used.",
+    cube: "Cube: put side length in Value 1. The visual shows a 3D-style cube.",
+    sphere: "Sphere: put radius in Value 1. The visual shows the radius from the center outward.",
     cylinder: "Cylinder: put radius in Value 1 and height in Value 2."
   };
 
@@ -331,7 +402,167 @@ function calculateGeometry() {
   }
 }
 
-/* Probability */
+function drawGeometryVisual() {
+  const canvas = document.getElementById("geometryCanvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const shape = document.getElementById("shape").value;
+  const n1 = Number(document.getElementById("num1").value) || 0;
+  const n2 = Number(document.getElementById("num2").value) || 0;
+
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "20px system-ui";
+  ctx.lineWidth = 4;
+
+  function label(text, x, y) {
+    ctx.fillStyle = "#eaf0ff";
+    ctx.fillText(text, x, y);
+  }
+
+  function line(x1, y1, x2, y2, text, lx, ly) {
+    ctx.strokeStyle = "#97f2df";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    label(text, lx, ly);
+  }
+
+  if (shape === "circle") {
+    const cx = w / 2;
+    const cy = h / 2;
+    const r = 120;
+
+    ctx.fillStyle = "rgba(184, 173, 255, 0.18)";
+    ctx.strokeStyle = "#b8adff";
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    line(cx, cy, cx + r, cy, `radius = ${n1 || "Value 1"}`, cx + 35, cy - 15);
+    label("Circle", cx - 30, cy + r + 38);
+  }
+
+  if (shape === "rectangle") {
+    const x = 250;
+    const y = 100;
+    const rw = 400;
+    const rh = 210;
+
+    ctx.fillStyle = "rgba(151, 242, 223, 0.16)";
+    ctx.strokeStyle = "#97f2df";
+    ctx.strokeRect(x, y, rw, rh);
+    ctx.fillRect(x, y, rw, rh);
+
+    line(x, y + rh + 25, x + rw, y + rh + 25, `width = ${n1 || "Value 1"}`, x + 125, y + rh + 55);
+    line(x + rw + 25, y, x + rw + 25, y + rh, `height = ${n2 || "Value 2"}`, x + rw + 40, y + 110);
+  }
+
+  if (shape === "triangle") {
+    const ax = 250;
+    const ay = 320;
+    const bx = 650;
+    const by = 320;
+    const cx = 450;
+    const cy = 90;
+
+    ctx.fillStyle = "rgba(255, 214, 165, 0.18)";
+    ctx.strokeStyle = "#ffd6a5";
+
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(bx, by);
+    ctx.lineTo(cx, cy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    line(ax, ay + 25, bx, by + 25, `base = ${n1 || "Value 1"}`, 385, ay + 55);
+    line(cx, cy, cx, ay, `height = ${n2 || "Value 2"}`, cx + 15, 210);
+  }
+
+  if (shape === "cube") {
+    const x = 310;
+    const y = 130;
+    const s = 170;
+    const offset = 70;
+
+    ctx.strokeStyle = "#ffadad";
+    ctx.fillStyle = "rgba(255, 173, 173, 0.15)";
+
+    ctx.strokeRect(x, y, s, s);
+    ctx.strokeRect(x + offset, y - offset, s, s);
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + offset, y - offset);
+    ctx.moveTo(x + s, y);
+    ctx.lineTo(x + s + offset, y - offset);
+    ctx.moveTo(x, y + s);
+    ctx.lineTo(x + offset, y + s - offset);
+    ctx.moveTo(x + s, y + s);
+    ctx.lineTo(x + s + offset, y + s - offset);
+    ctx.stroke();
+
+    line(x, y + s + 30, x + s, y + s + 30, `side = ${n1 || "Value 1"}`, x + 35, y + s + 60);
+  }
+
+  if (shape === "sphere") {
+    const cx = w / 2;
+    const cy = h / 2;
+    const r = 120;
+
+    ctx.fillStyle = "rgba(160, 196, 255, 0.16)";
+    ctx.strokeStyle = "#a0c4ff";
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r, 38, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    line(cx, cy, cx + r, cy, `radius = ${n1 || "Value 1"}`, cx + 35, cy - 15);
+    label("Sphere", cx - 35, cy + r + 38);
+  }
+
+  if (shape === "cylinder") {
+    const x = 330;
+    const y = 90;
+    const cw = 240;
+    const ch = 250;
+
+    ctx.strokeStyle = "#9bf6ff";
+    ctx.fillStyle = "rgba(155, 246, 255, 0.14)";
+
+    ctx.beginPath();
+    ctx.ellipse(x + cw / 2, y, cw / 2, 38, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + ch);
+    ctx.moveTo(x + cw, y);
+    ctx.lineTo(x + cw, y + ch);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.ellipse(x + cw / 2, y + ch, cw / 2, 38, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    line(x + cw / 2, y, x + cw, y, `radius = ${n1 || "Value 1"}`, x + cw / 2 + 35, y - 18);
+    line(x + cw + 35, y, x + cw + 35, y + ch, `height = ${n2 || "Value 2"}`, x + cw + 50, y + 135);
+  }
+}
 
 function updateProbabilityHelp() {
   const type = document.getElementById("simType").value;
@@ -392,8 +623,6 @@ function runSimulation() {
   }
 }
 
-/* Patterns */
-
 function updatePatternHelp() {
   const type = document.getElementById("patternType").value;
   const help = document.getElementById("patternHelp");
@@ -452,11 +681,10 @@ function generatePattern() {
   output.textContent = sequence.join(", ");
 }
 
-/* Startup */
-
 changeSortSpeed();
 makeBars();
 updateGeometryHelp();
 updateProbabilityHelp();
 updatePatternHelp();
 drawGraph();
+drawGeometryVisual();
