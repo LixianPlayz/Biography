@@ -35,7 +35,7 @@
 
         <div onclick="showPage('geometry')" class="card">
           <h3>Geometry Calculator</h3>
-          <p>Calculate area, perimeter, circumference, and volume for different shapes.</p>
+          <p>Calculate area, perimeter, circumference, surface area, and volume with labeled visuals.</p>
         </div>
 
         <div onclick="showPage('probability')" class="card">
@@ -78,9 +78,18 @@
       <div class="stats">
         <div>Comparisons: <strong id="comparisons">0</strong></div>
         <div>Swaps: <strong id="swaps">0</strong></div>
+        <div>Current Action: <strong id="sortAction">Waiting</strong></div>
       </div>
 
       <div id="bars" class="bars"></div>
+
+      <div class="array-panel">
+        <div class="array-panel-header">
+          <h3>Auxiliary Array View</h3>
+          <p>This shows the exact number list the sorting code is reading and changing.</p>
+        </div>
+        <div id="arrayView" class="array-view"></div>
+      </div>
     </section>
 
     <section id="graphing" class="screen">
@@ -124,14 +133,14 @@
     <section id="geometry" class="screen">
       <h1>Geometry <span>Calculator</span></h1>
       <p class="instructions">
-        Pick a shape, enter the needed measurements, then press Calculate.
-        The labels below explain what each input means for the selected shape.
+        Pick a shape, enter the measurements, then press Calculate.
+        The visual shows what each measurement means with labeled radius, width, height, base, or side length.
       </p>
 
       <div class="formula-box" id="geometryHelp">Choose a shape to see instructions.</div>
 
       <div class="controls">
-        <select id="shape" onchange="updateGeometryHelp()">
+        <select id="shape" onchange="updateGeometryHelp(); drawGeometryVisual();">
           <option value="circle">Circle</option>
           <option value="rectangle">Rectangle</option>
           <option value="triangle">Triangle</option>
@@ -140,10 +149,12 @@
           <option value="cylinder">Cylinder</option>
         </select>
 
-        <input id="num1" type="number" placeholder="Value 1" />
-        <input id="num2" type="number" placeholder="Value 2" />
-        <button onclick="calculateGeometry()">Calculate</button>
+        <input id="num1" type="number" placeholder="Value 1" oninput="drawGeometryVisual()" />
+        <input id="num2" type="number" placeholder="Value 2" oninput="drawGeometryVisual()" />
+        <button onclick="calculateGeometry(); drawGeometryVisual();">Calculate</button>
       </div>
+
+      <canvas id="geometryCanvas" width="900" height="430"></canvas>
 
       <div id="geometryOutput" class="output"></div>
     </section>
