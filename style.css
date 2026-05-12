@@ -52,6 +52,7 @@ button {
   font-weight: 800;
   background: linear-gradient(135deg, #b8adff, #97f2df);
   color: #061016;
+  transition: 0.18s ease;
 }
 
 button:hover {
@@ -99,6 +100,7 @@ h1 {
   border: 1px solid rgba(255, 255, 255, 0.11);
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
   cursor: pointer;
+  transition: 0.18s ease;
 }
 
 .card h3 {
@@ -137,7 +139,8 @@ h1 {
 
 .stats div,
 .formula-box,
-.output {
+.output,
+.array-panel {
   padding: 16px 18px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.055);
@@ -186,7 +189,70 @@ h1 {
   transform: translateY(-15px);
 }
 
-canvas {
+.array-panel {
+  margin-top: 16px;
+}
+
+.array-panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+
+.array-panel-header h3 {
+  color: #f6f8ff;
+  font-size: 1.1rem;
+}
+
+.array-panel-header p {
+  color: #aeb7ca;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-width: 520px;
+}
+
+.array-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.array-cell {
+  min-width: 52px;
+  padding: 10px 11px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.075);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  color: #eaf0ff;
+  text-align: center;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+  transition: 0.18s ease;
+}
+
+.array-cell small {
+  display: block;
+  margin-bottom: 4px;
+  color: #9fa8bd;
+  font-size: 0.68rem;
+}
+
+.array-cell.compare {
+  background: rgba(184, 173, 255, 0.22);
+  border-color: rgba(184, 173, 255, 0.75);
+  transform: translateY(-3px);
+}
+
+.array-cell.swap {
+  background: rgba(151, 242, 223, 0.2);
+  border-color: rgba(151, 242, 223, 0.75);
+  transform: translateY(-5px);
+}
+
+canvas,
+#geometryCanvas {
   width: 100%;
   max-width: 100%;
   border-radius: 26px;
@@ -196,6 +262,10 @@ canvas {
     rgba(3, 4, 7, 0.92);
   background-size: 36px 36px;
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#geometryCanvas {
+  margin-top: 15px;
 }
 
 @media (max-width: 650px) {
@@ -220,5 +290,18 @@ canvas {
 
   .bar {
     width: 22px;
+  }
+
+  .array-panel-header {
+    display: block;
+  }
+
+  .array-panel-header p {
+    margin-top: 8px;
+  }
+
+  .array-cell {
+    min-width: 44px;
+    padding: 8px 9px;
   }
 }
