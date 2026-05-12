@@ -25,9 +25,7 @@ function showPage(id) {
 
   if (id === "graphing") drawGraph();
 
-  if (id === "geometry") {
-    updateGeometryHelp();
-  }
+  
 
   if (id === "probability") updateProbabilityHelp();
   if (id === "patterns") updatePatternHelp();
@@ -346,22 +344,6 @@ function drawGraph() {
   }
 
   ctx.stroke();
-}
-
-function updateGeometryHelp() {
-  const shape = document.getElementById("shape").value;
-  const help = document.getElementById("geometryHelp");
-
-  const text = {
-    circle: "Circle: put radius in Value 1. The visual shows the radius from the center to the edge.",
-    rectangle: "Rectangle: put width in Value 1 and height in Value 2.",
-    triangle: "Triangle: put base in Value 1 and height in Value 2.",
-    cube: "Cube: put side length in Value 1. The visual shows a 3D-style cube.",
-    sphere: "Sphere: put radius in Value 1. The visual shows the radius from the center outward.",
-    cylinder: "Cylinder: put radius in Value 1 and height in Value 2."
-  };
-
-  help.textContent = text[shape];
 }
 
 function calculateGeometry() {
