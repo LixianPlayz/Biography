@@ -408,15 +408,19 @@ function drawGeometryVisual() {
 
   const ctx = canvas.getContext("2d");
   const shape = document.getElementById("shape").value;
-  const n1 = Number(document.getElementById("num1").value) || 0;
-  const n2 = Number(document.getElementById("num2").value) || 0;
+  const n1 = Math.max(0, Number(document.getElementById("num1").value) || 0);
+  const n2 = Math.max(0, Number(document.getElementById("num2").value) || 0);
 
   const w = canvas.width;
   const h = canvas.height;
+  const centerX = w / 2;
+  const centerY = h / 2;
 
   ctx.clearRect(0, 0, w, h);
   ctx.font = "20px system-ui";
   ctx.lineWidth = 4;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
 
   function label(text, x, y) {
     ctx.fillStyle = "#eaf0ff";
@@ -433,44 +437,60 @@ function drawGeometryVisual() {
     label(text, lx, ly);
   }
 
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function scaleSingle(value, fallback, min, max) {
+    if (value <= 0) return fallback;
+    return clamp(value * 14, min, max);
+  }
+
+  function scalePair(value, otherValue, maxSize) {
+    const safeValue = value > 0 ? value : 1;
+    const safeOther = otherValue > 0 ? otherValue : 1;
+    const largest = Math.max(safeValue, safeOther);
+    return clamp((safeValue / largest) * maxSize, 70, maxSize);
+  }
+
   if (shape === "circle") {
-    const cx = w / 2;
-    const cy = h / 2;
-    const r = 120;
+    const radius = scaleSingle(n1, 115, 45, 165);
 
     ctx.fillStyle = "rgba(184, 173, 255, 0.18)";
     ctx.strokeStyle = "#b8adff";
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    line(cx, cy, cx + r, cy, `radius = ${n1 || "Value 1"}`, cx + 35, cy - 15);
-    label("Circle", cx - 30, cy + r + 38);
+    line(centerX, centerY, centerX + radius, centerY, `radius = ${n1 || "Value 1"}`, centerX + 30, centerY - 16);
+    label(`Visual radius scales with Value 1`, centerX - 130, centerY + radius + 38);
   }
 
   if (shape === "rectangle") {
-    const x = 250;
-    const y = 100;
-    const rw = 400;
-    const rh = 210;
+    const rectW = scalePair(n1, n2, 440);
+    const rectH = scalePair(n2, n1, 240);
+    const x = centerX - rectW / 2;
+    const y = centerY - rectH / 2;
 
     ctx.fillStyle = "rgba(151, 242, 223, 0.16)";
     ctx.strokeStyle = "#97f2df";
-    ctx.strokeRect(x, y, rw, rh);
-    ctx.fillRect(x, y, rw, rh);
+    ctx.fillRect(x, y, rectW, rectH);
+    ctx.strokeRect(x, y, rectW, rectH);
 
-    line(x, y + rh + 25, x + rw, y + rh + 25, `width = ${n1 || "Value 1"}`, x + 125, y + rh + 55);
-    line(x + rw + 25, y, x + rw + 25, y + rh, `height = ${n2 || "Value 2"}`, x + rw + 40, y + 110);
+    line(x, y + rectH + 24, x + rectW, y + rectH + 24, `width = ${n1 || "Value 1"}`, x + rectW / 2 - 70, y + rectH + 54);
+    line(x + rectW + 24, y, x + rectW + 24, y + rectH, `height = ${n2 || "Value 2"}`, x + rectW + 40, y + rectH / 2);
   }
 
   if (shape === "triangle") {
-    const ax = 250;
-    const ay = 320;
-    const bx = 650;
-    const by = 320;
-    const cx = 450;
-    const cy = 90;
+    const base = scalePair(n1, n2, 460);
+    const height = scalePair(n2, n1, 260);
+    const ax = centerX - base / 2;
+    const ay = centerY + height / 2;
+    const bx = centerX + base / 2;
+    const by = ay;
+    const cx = centerX;
+    const cy = centerY - height / 2;
 
     ctx.fillStyle = "rgba(255, 214, 165, 0.18)";
     ctx.strokeStyle = "#ffd6a5";
@@ -483,84 +503,86 @@ function drawGeometryVisual() {
     ctx.fill();
     ctx.stroke();
 
-    line(ax, ay + 25, bx, by + 25, `base = ${n1 || "Value 1"}`, 385, ay + 55);
-    line(cx, cy, cx, ay, `height = ${n2 || "Value 2"}`, cx + 15, 210);
+    line(ax, ay + 24, bx, by + 24, `base = ${n1 || "Value 1"}`, centerX - 70, ay + 54);
+    line(cx, cy, cx, ay, `height = ${n2 || "Value 2"}`, cx + 18, centerY);
   }
 
   if (shape === "cube") {
-    const x = 310;
-    const y = 130;
-    const s = 170;
-    const offset = 70;
+    const side = scaleSingle(n1, 155, 70, 210);
+    const offset = clamp(side * 0.38, 35, 80);
+    const x = centerX - side / 2 - offset / 2;
+    const y = centerY - side / 2 + offset / 2;
 
     ctx.strokeStyle = "#ffadad";
     ctx.fillStyle = "rgba(255, 173, 173, 0.15)";
 
-    ctx.strokeRect(x, y, s, s);
-    ctx.strokeRect(x + offset, y - offset, s, s);
+    ctx.fillRect(x, y, side, side);
+    ctx.strokeRect(x, y, side, side);
+    ctx.strokeRect(x + offset, y - offset, side, side);
 
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + offset, y - offset);
-    ctx.moveTo(x + s, y);
-    ctx.lineTo(x + s + offset, y - offset);
-    ctx.moveTo(x, y + s);
-    ctx.lineTo(x + offset, y + s - offset);
-    ctx.moveTo(x + s, y + s);
-    ctx.lineTo(x + s + offset, y + s - offset);
+    ctx.moveTo(x + side, y);
+    ctx.lineTo(x + side + offset, y - offset);
+    ctx.moveTo(x, y + side);
+    ctx.lineTo(x + offset, y + side - offset);
+    ctx.moveTo(x + side, y + side);
+    ctx.lineTo(x + side + offset, y + side - offset);
     ctx.stroke();
 
-    line(x, y + s + 30, x + s, y + s + 30, `side = ${n1 || "Value 1"}`, x + 35, y + s + 60);
+    line(x, y + side + 30, x + side, y + side + 30, `side = ${n1 || "Value 1"}`, x + side / 2 - 48, y + side + 60);
+    label("Cube scales with side length", x + side + offset + 35, y + 20);
   }
 
   if (shape === "sphere") {
-    const cx = w / 2;
-    const cy = h / 2;
-    const r = 120;
+    const radius = scaleSingle(n1, 115, 45, 165);
 
     ctx.fillStyle = "rgba(160, 196, 255, 0.16)";
     ctx.strokeStyle = "#a0c4ff";
 
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.ellipse(cx, cy, r, 38, 0, 0, Math.PI * 2);
+    ctx.ellipse(centerX, centerY, radius, radius * 0.32, 0, 0, Math.PI * 2);
     ctx.stroke();
 
-    line(cx, cy, cx + r, cy, `radius = ${n1 || "Value 1"}`, cx + 35, cy - 15);
-    label("Sphere", cx - 35, cy + r + 38);
+    line(centerX, centerY, centerX + radius, centerY, `radius = ${n1 || "Value 1"}`, centerX + 30, centerY - 16);
+    label("Sphere scales with radius", centerX - 105, centerY + radius + 38);
   }
 
   if (shape === "cylinder") {
-    const x = 330;
-    const y = 90;
-    const cw = 240;
-    const ch = 250;
+    const radiusSize = scalePair(n1, n2, 130);
+    const cylinderHeight = scalePair(n2, n1, 260);
+    const ellipseH = clamp(radiusSize * 0.34, 22, 46);
+    const cylinderW = radiusSize * 2;
+    const x = centerX - cylinderW / 2;
+    const y = centerY - cylinderHeight / 2;
 
     ctx.strokeStyle = "#9bf6ff";
     ctx.fillStyle = "rgba(155, 246, 255, 0.14)";
 
     ctx.beginPath();
-    ctx.ellipse(x + cw / 2, y, cw / 2, 38, 0, 0, Math.PI * 2);
+    ctx.ellipse(centerX, y, radiusSize, ellipseH, 0, 0, Math.PI * 2);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.lineTo(x, y + ch);
-    ctx.moveTo(x + cw, y);
-    ctx.lineTo(x + cw, y + ch);
+    ctx.lineTo(x, y + cylinderHeight);
+    ctx.moveTo(x + cylinderW, y);
+    ctx.lineTo(x + cylinderW, y + cylinderHeight);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.ellipse(x + cw / 2, y + ch, cw / 2, 38, 0, 0, Math.PI * 2);
+    ctx.ellipse(centerX, y + cylinderHeight, radiusSize, ellipseH, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    line(x + cw / 2, y, x + cw, y, `radius = ${n1 || "Value 1"}`, x + cw / 2 + 35, y - 18);
-    line(x + cw + 35, y, x + cw + 35, y + ch, `height = ${n2 || "Value 2"}`, x + cw + 50, y + 135);
+    line(centerX, y, x + cylinderW, y, `radius = ${n1 || "Value 1"}`, centerX + 35, y - 18);
+    line(x + cylinderW + 35, y, x + cylinderW + 35, y + cylinderHeight, `height = ${n2 || "Value 2"}`, x + cylinderW + 50, y + cylinderHeight / 2);
   }
 }
 
